@@ -17,13 +17,15 @@
 
 import sys
 
-from zyxelprometheus import login, scrape_xdsl, scrape_traffic
+from zyxelprometheus import login, prometheus, scrape_xdsl, scrape_traffic
 
 def main():
     host = "https://192.168.1.1"
     session = login(host, "admin", sys.argv[1])
-    print(scrape_xdsl(session, host)[0]["result"])
-    print(scrape_traffic(session, host))
+    xdsl = scrape_xdsl(session, host)[0]["result"]
+    traffic = scrape_traffic(session, host)
+
+    print(prometheus(xdsl, traffic))
 
 if __name__ == "__main__":
     main()

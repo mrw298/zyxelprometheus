@@ -15,4 +15,5 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from .login import login
+from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
