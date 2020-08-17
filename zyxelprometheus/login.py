@@ -23,6 +23,7 @@ import requests
 # {"Input_Account":"admin","Input_Passwd":"c2hhZ2dpZTE:",
 #  "currLang":"en","RememberPassword":0,"SHA512_password":false}
 
+
 def login(host, username, password):
     session = requests.session()
     session.verify = False

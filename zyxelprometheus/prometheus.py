@@ -1,6 +1,8 @@
 import re
 
-line_rate_re = re.compile(r"Line Rate:\s+(?P<upstream>\d+[.]\d+) Mbps\s+(?P<downstream>\d+[.]\d+) Mbps")
+line_rate_re = re.compile(
+    r"Line Rate:\s+(?P<upstream>\d+[.]\d+) Mbps\s+"
+    + r"(?P<downstream>\d+[.]\d+) Mbps")
 
 #               Line Rate:      7.044 Mbps       39.998 Mbps
 #    Actual Net Data Rate:      7.016 Mbps       39.999 Mbps
@@ -12,6 +14,7 @@ line_rate_re = re.compile(r"Line Rate:\s+(?P<upstream>\d+[.]\d+) Mbps\s+(?P<down
 #              Actual INP:        0.0 symbols      55.0 symbols
 #       Total Attenuation:        8.8 dB           22.6 dB
 # Attainable Net Data Rate:      7.016 Mbps       47.811 Mbps
+
 
 def prometheus(xdsl, traffic):
     output = []
