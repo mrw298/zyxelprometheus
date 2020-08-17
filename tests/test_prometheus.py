@@ -14,5 +14,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .test_login import TestLogin
-from .test_prometheus import TestPrometheus
+from base64 import b64decode
+import json
+import unittest
+
+import responses
+
+from zyxelprometheus import prometheus
+
+XDSL = open("example_xdsl.txt").read()
+TRAFFIC = json.load(open("example_traffic.json"))
+
+class TestPrometheus(unittest.TestCase):
+    @responses.activate
+    def test_values(self):
+        prom = prometheus(XDSL, TRAFFIC)
+
+        self.assertIn("""zyxel_line_rate{stream="up"} 7386169""", prom)
