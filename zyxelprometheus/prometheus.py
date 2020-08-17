@@ -26,4 +26,26 @@ def prometheus(xdsl, traffic):
     output.append(f"""zyxel_line_rate{{stream="up"}} {line_rate_up}""")
     output.append(f"""zyxel_line_rate{{stream="down"}} {line_rate_down}""")
 
+    for name, idx in get_iface_names(traffic).items():
+        output.append("# HELP zyxel_bytes Bytes sent/received.")
+        output.append("# TYPE zyxel_bytes counter")
+        output.append(f"""zyxel_bytes{{stream="up",iface="{name}"}}"""
+                      + f""" {traffic["Object"][0]["ipIfaceSt"][idx]["BytesSent"]}""")
+        output.append(f"""zyxel_bytes{{stream="down",iface="{name}"}}"""
+                      + f""" {traffic["Object"][0]["ipIfaceSt"][idx]["BytesReceived"]}""")
+
+        output.append("# HELP zyxel_packets Packets sent/received.")
+        output.append("# TYPE zyxel_packets counter")
+        output.append(f"""zyxel_packets{{stream="up",iface="{name}"}}"""
+                      + f""" {traffic["Object"][0]["ipIfaceSt"][idx]["PacketsSent"]}""")
+        output.append(f"""zyxel_packets{{stream="down",iface="{name}"}}"""
+                      + f""" {traffic["Object"][0]["ipIfaceSt"][idx]["PacketsReceived"]}""")
+
     return "\n".join(output)
+
+def get_iface_names(traffic):
+    r = {}
+    for idx in range(len(traffic["Object"][0]["ipIface"])):
+        if traffic["Object"][0]["ipIface"][idx]["Status"] == "Up":
+            r[traffic["Object"][0]["ipIface"][idx]["Name"].lower()] = idx
+    return r

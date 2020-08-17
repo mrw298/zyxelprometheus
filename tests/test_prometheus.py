@@ -31,3 +31,4 @@ class TestPrometheus(unittest.TestCase):
         prom = prometheus(XDSL, TRAFFIC)
 
         self.assertIn("""zyxel_line_rate{stream="up"} 7386169""", prom)
+        self.assertIn("""zyxel_packets{stream="up",iface="wan"} 1201548572""", prom)
