@@ -17,3 +17,5 @@
 from .login import login
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
+
+__version__ = "0.0.1"
