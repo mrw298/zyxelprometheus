@@ -7,3 +7,4 @@ script:
   - ./code_style.sh && ./run_tests.sh
 after_success:
   - coveralls
+  - semantic-release publish
