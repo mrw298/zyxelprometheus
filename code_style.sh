@@ -2,4 +2,4 @@
 
 set -e
 
-pycodestyle bin/ zyxelprometheus/
+pycodestyle bin/ zyxelprometheus/ tests/

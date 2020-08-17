@@ -19,6 +19,8 @@ import json
 
 import requests
 
+from .exceptions import InvalidPassword
+
 # https://192.168.1.1/UserLogin
 # {"Input_Account":"admin","Input_Passwd":"c2hhZ2dpZTE:",
 #  "currLang":"en","RememberPassword":0,"SHA512_password":false}
@@ -34,6 +36,8 @@ def login(host, username, password):
         "RememberPassword": 0,
         "SHA512_password": False
     }))
+    if r.status_code == 401:
+        raise InvalidPassword("Invalid username or password.")
     r.raise_for_status()
 
     return session

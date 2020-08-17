@@ -20,15 +20,30 @@ import unittest
 
 import responses
 
-from zyxelprometheus import login
+from zyxelprometheus import login, InvalidPassword
+
 
 class TestLogin(unittest.TestCase):
     @responses.activate
     def test_correct_password(self):
-        responses.add(responses.POST, 'https://192.168.1.1/UserLogin', status=200)
+        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+                      status=200)
 
         login("https://192.168.1.1", "admin", "testpassword")
-        
+
+        self.assertEqual(1, len(responses.calls))
+        data = json.loads(responses.calls[0].request.body)
+        self.assertEqual("admin", data["Input_Account"])
+        self.assertEqual(b"testpassword", b64decode(data["Input_Passwd"]))
+
+    @responses.activate
+    def test_wrong_password(self):
+        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+                      status=401)
+
+        with self.assertRaises(InvalidPassword):
+            login("https://192.168.1.1", "admin", "testpassword")
+
         self.assertEqual(1, len(responses.calls))
         data = json.loads(responses.calls[0].request.body)
         self.assertEqual("admin", data["Input_Account"])
