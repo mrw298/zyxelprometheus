@@ -1,0 +1,104 @@
+
+============================================================================
+    VDSL Training Status:   Showtime
+                    Mode:   VDSL2 Annex B
+            VDSL Profile:   Profile 17a
+                G.Vector:   Disable
+            Traffic Type:   PTM Mode
+             Link Uptime:   87 days: 21 hours: 11 minutes
+============================================================================
+       VDSL Port Details       Upstream         Downstream
+               Line Rate:      7.044 Mbps       39.998 Mbps
+    Actual Net Data Rate:      7.016 Mbps       39.999 Mbps
+          Trellis Coding:         ON                ON
+              SNR Margin:        5.7 dB            6.3 dB
+            Actual Delay:          0 ms              0 ms
+          Transmit Power:        2.2 dBm          11.4 dBm
+           Receive Power:       -6.5 dBm         -10.9 dBm
+              Actual INP:        0.0 symbols      55.0 symbols
+       Total Attenuation:        8.8 dB           22.4 dB
+Attainable Net Data Rate:      7.016 Mbps       45.937 Mbps
+============================================================================
+      VDSL Band Status    U0      U1      U2      U3      D1      D2      D3
+  Line Attenuation(dB):  7.3    40.2    59.8     N/A    18.0    50.3    77.8   
+Signal Attenuation(dB):  7.3    40.4     N/A     N/A    20.0    50.2     N/A   
+        SNR Margin(dB):  5.4     5.7     N/A     N/A     6.3     6.3     N/A   
+   Transmit Power(dBm):  0.7   - 3.1   -17.3     N/A     9.0     7.8     N/A   
+============================================================================
+
+            VDSL Counters
+
+           Downstream        Upstream
+Since Link time = 11 min 18 sec
+FEC:		94019703		64911
+CRC:		4340		3252
+ES:		1359		2641
+SES:		107		0
+UAS:		0		0
+LOS:		0		0
+LOF:		0		0
+LOM:		0		0
+Retr:		0
+HostInitRetr:	0
+FailedRetr:	0
+Latest 15 minutes time = 1 min 49 sec
+FEC:		2635		0
+CRC:		0		0
+ES:		0		0
+SES:		0		0
+UAS:		0		0
+LOS:		0		0
+LOF:		0		0
+LOM:		0		0
+Retr:		0
+HostInitRetr:	0
+FailedRetr:	0
+Previous 15 minutes time = 15 min 0 sec
+FEC:		18784		4386
+CRC:		0		1
+ES:		0		1
+SES:		0		0
+UAS:		0		0
+LOS:		0		0
+LOF:		0		0
+LOM:		0		0
+Retr:		N/A
+HostInitRetr:	N/A
+FailedRetr:	N/A
+Latest 1 day time = 5 hours 16 min 49 sec
+FEC:		333836		4399
+CRC:		2		8
+ES:		2		8
+SES:		0		0
+UAS:		0		0
+LOS:		0		0
+LOF:		0		0
+LOM:		0		0
+Retr:		0
+HostInitRetr:	0
+FailedRetr:	0
+Previous 1 day time = 24 hours 0 sec
+FEC:		1512607		49
+CRC:		21		21
+ES:		4		17
+SES:		0		0
+UAS:		0		0
+LOS:		0		0
+LOF:		0		0
+LOM:		0		0
+Retr:		0
+HostInitRetr:	0
+FailedRetr:	0
+Total time = 1 days 5 hours 16 min 49 sec
+FEC:		104035784		74140
+CRC:		4890		4133
+ES:		1535		3335
+SES:		155		0
+UAS:		211		201
+LOS:		1		0
+LOF:		0		0
+LOM:		0		0
+Retr:		1
+HostInitRetr:	0
+FailedRetr:	0
+============================================================================
