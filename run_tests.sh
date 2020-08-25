@@ -4,8 +4,8 @@ coverage run test.py
 
 let R=$?
 
-coverage report --omit="*/site-packages/*","test.py","tests/*"
+coverage report
 
-coverage html --omit="*/site-packages/*","test.py","tests/*"
+coverage html
 
 exit $R
