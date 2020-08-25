@@ -3,4 +3,4 @@
     test.py
     */site-packages/
     tests/*
-    /home/*
+    /home/travis/virtualenv/*
