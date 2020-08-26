@@ -16,10 +16,13 @@
 
 import setuptools
 
+from zyxelprometheus import __version__
+
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-from zyxelprometheus import __version__
+with open('requirements.txt') as f:
+    requirements = f.read().splitlines()
 
 setuptools.setup(
     name="zyxelprometheus", # Replace with your own username
@@ -38,4 +41,5 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.8',
+    install_requires=requirements,
 )
