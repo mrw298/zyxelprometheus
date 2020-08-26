@@ -19,9 +19,11 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+from zyxelprometheus import __version__
+
 setuptools.setup(
     name="zyxelprometheus", # Replace with your own username
-    version="0.0.1",
+    version=__version__,
     author="Andrew Wilkinson",
     author_email="andrewjwilkinson@gmail.com",
     description="Get statistics from a Zyxel router and expose them to Prometheus.",
