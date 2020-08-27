@@ -19,4 +19,4 @@ from .login import login
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
 
-__version__ = "0.1.3"
+__version__ = "0.2.0"
