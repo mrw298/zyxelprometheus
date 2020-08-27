@@ -8,3 +8,9 @@ script:
 after_success:
   - coveralls
   - semantic-release publish
+
+deploy:
+  provider: script
+  script: bash docker_push.sh
+  on:
+    tags: true
