@@ -18,33 +18,35 @@ line_rate_re = re.compile(
 
 def prometheus(xdsl, traffic):
     output = []
-    line_rate = line_rate_re.search(xdsl)
-    line_rate_up = int(float(line_rate.group("upstream"))*1024*1024)
-    line_rate_down = int(float(line_rate.group("downstream"))*1024*1024)
-    output.append("# HELP zyxel_line_rate The line rate.")
-    output.append("# TYPE zyxel_line_rate gauge")
-    output.append(f"""zyxel_line_rate{{stream="up"}} {line_rate_up}""")
-    output.append(f"""zyxel_line_rate{{stream="down"}} {line_rate_down}""")
+    if xdsl is not None:
+        line_rate = line_rate_re.search(xdsl)
+        line_rate_up = int(float(line_rate.group("upstream"))*1024*1024)
+        line_rate_down = int(float(line_rate.group("downstream"))*1024*1024)
+        output.append("# HELP zyxel_line_rate The line rate.")
+        output.append("# TYPE zyxel_line_rate gauge")
+        output.append(f"""zyxel_line_rate{{stream="up"}} {line_rate_up}""")
+        output.append(f"""zyxel_line_rate{{stream="down"}} {line_rate_down}""")
 
-    iface_stats = traffic["Object"][0]["ipIfaceSt"]
-    for name, idx in get_iface_names(traffic).items():
-        bytes_sent = iface_stats[idx]["BytesSent"]
-        bytes_recv = iface_stats[idx]["BytesReceived"]
-        output.append("# HELP zyxel_bytes Bytes sent/received.")
-        output.append("# TYPE zyxel_bytes counter")
-        output.append(f"""zyxel_bytes{{stream="up",iface="{name}"}}"""
-                      + f""" {bytes_sent}""")
-        output.append(f"""zyxel_bytes{{stream="down",iface="{name}"}}"""
-                      + f""" {bytes_recv}""")
+    if traffic is not None:
+        iface_stats = traffic["Object"][0]["ipIfaceSt"]
+        for name, idx in get_iface_names(traffic).items():
+            bytes_sent = iface_stats[idx]["BytesSent"]
+            bytes_recv = iface_stats[idx]["BytesReceived"]
+            output.append("# HELP zyxel_bytes Bytes sent/received.")
+            output.append("# TYPE zyxel_bytes counter")
+            output.append(f"""zyxel_bytes{{stream="up",iface="{name}"}}"""
+                          + f""" {bytes_sent}""")
+            output.append(f"""zyxel_bytes{{stream="down",iface="{name}"}}"""
+                          + f""" {bytes_recv}""")
 
-        packets_sent = iface_stats[idx]["PacketsSent"]
-        packets_recv = iface_stats[idx]["PacketsReceived"]
-        output.append("# HELP zyxel_packets Packets sent/received.")
-        output.append("# TYPE zyxel_packets counter")
-        output.append(f"""zyxel_packets{{stream="up",iface="{name}"}}"""
-                      + f""" {packets_sent}""")
-        output.append(f"""zyxel_packets{{stream="down",iface="{name}"}}"""
-                      + f""" {packets_recv}""")
+            packets_sent = iface_stats[idx]["PacketsSent"]
+            packets_recv = iface_stats[idx]["PacketsReceived"]
+            output.append("# HELP zyxel_packets Packets sent/received.")
+            output.append("# TYPE zyxel_packets counter")
+            output.append(f"""zyxel_packets{{stream="up",iface="{name}"}}"""
+                          + f""" {packets_sent}""")
+            output.append(f"""zyxel_packets{{stream="down",iface="{name}"}}"""
+                          + f""" {packets_recv}""")
 
     return "\n".join(output)
 

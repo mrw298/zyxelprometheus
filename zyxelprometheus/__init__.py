@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from .exceptions import InvalidPassword
+from .arguments import get_arguments
+from .exceptions import InvalidArguments, InvalidPassword
 from .login import login
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
