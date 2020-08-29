@@ -38,4 +38,8 @@ class TestArguments(unittest.TestCase):
         self.assertEqual("testpassword", args.passwd)
 
     def test_no_passwd(self):
-        self.assertThrows(InvalidArguments, get_arguments, [])
+        self.assertRaises(InvalidArguments, get_arguments, [])
+
+    def test_serve_and_raise(self):
+        self.assertRaises(InvalidArguments, get_arguments,
+                          ["--passwd", "testpassword", "-d", "--raw"])
