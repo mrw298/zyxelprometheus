@@ -37,6 +37,12 @@ class TestArguments(unittest.TestCase):
         args = get_arguments([])
         self.assertEqual("testpassword", args.passwd)
 
+    def test_bind_without_port(self):
+        os.environ["ZYXEL_PASSWD"] = "testpassword"
+        args = get_arguments(["--bind", "192.168.1.2"])
+        self.assertEqual("192.168.1.2", args.bind[0])
+        self.assertEqual(9100, args.bind[1])
+
     def test_no_passwd(self):
         self.assertRaises(InvalidArguments, get_arguments, [])
 
