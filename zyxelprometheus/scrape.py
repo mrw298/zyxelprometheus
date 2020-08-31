@@ -16,7 +16,7 @@
 
 def scrape_xdsl(session, host):
     r = session.get(host + "/cgi-bin/xDSLStatistics_handle?line=0")
-    return r.json()
+    return r.json()[0]["result"]
 
 
 def scrape_traffic(session, host):

@@ -19,5 +19,6 @@ from .exceptions import InvalidArguments, InvalidPassword
 from .login import login
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
+from .server import serve
 
 __version__ = "0.3.0"

@@ -62,4 +62,9 @@ def get_arguments(args):
         raise InvalidArguments("Can't use raw mode when serving mode is "
                                + "turned on.")
 
+    if ":" not in args.bind:
+        args.bind = (args.bind, 9100)
+    else:
+        args.bind = (args.bind.split(":")[0], int(args.bind.split(":")[1]))
+
     return args

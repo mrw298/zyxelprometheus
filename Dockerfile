@@ -5,4 +5,4 @@ ARG VERSION
 RUN pip install zyxelprometheus==$VERSION
 
 ENTRYPOINT ["zyxelprometheus"]
-CMD []
+CMD ["-d"]

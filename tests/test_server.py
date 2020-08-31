@@ -1,0 +1,76 @@
+# zyxelprometheus
+# Copyright (C) 2020 Andrew Wilkinson
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+import io
+import json
+import unittest
+
+import responses
+
+from zyxelprometheus.server import Handler, Scraper
+
+XDSL = open("example_xdsl.txt").read()
+TRAFFIC = open("example_traffic.json").read()
+
+class MockHandler(Handler):
+    def __init__(self):
+        self.wfile = io.BytesIO()
+        self.requestline = "GET"
+        self.client_address = ("127.0.0.1", 8000)
+        self.request_version = "1.0"
+        self.command = "GET"
+
+class TestServer(unittest.TestCase):
+    def test_index(self):
+        handler = MockHandler()
+        handler.path = "/"
+        handler.do_GET()
+
+        handler.wfile.seek(0)
+        self.assertTrue("/metrics" in handler.wfile.read().decode("utf8"))
+
+    def test_error(self):
+        handler = MockHandler()
+        handler.path = "/error"
+        handler.do_GET()
+
+        handler.wfile.seek(0)
+        self.assertTrue("404" in handler.wfile.read().decode("utf8"))
+
+    @responses.activate
+    def test_metrics(self):
+        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+                      status=200)
+        responses.add(responses.GET, 'https://192.168.1.1/cgi-bin/xDSLStatistics_handle?line=0',
+                      status=200, body=json.dumps([{"result": XDSL}]))
+        responses.add(responses.GET, 'https://192.168.1.1/cgi-bin/DAL?oid=Traffic_Status',
+                      status=200, body=TRAFFIC)
+
+        class Args:
+            host = "https://192.168.1.1"
+            user = "testuser"
+            passwd = "testpasswd"
+            traffic_only = False
+            xdsl_only = False
+
+        MockHandler.scraper = Scraper(Args())
+
+        handler = MockHandler()
+        handler.path = "/metrics"
+        handler.do_GET()
+
+        handler.wfile.seek(0)
+        self.assertTrue("zyxel_line_rate" in handler.wfile.read().decode("utf8"))

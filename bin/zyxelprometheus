@@ -17,7 +17,7 @@
 
 import sys
 
-from zyxelprometheus import get_arguments, login, prometheus, scrape_xdsl, scrape_traffic
+from zyxelprometheus import get_arguments, login, prometheus, scrape_xdsl, scrape_traffic, serve
 from zyxelprometheus import InvalidArguments
 
 def main():
@@ -26,18 +26,21 @@ def main():
     except InvalidArguments as e:
         sys.stderr.write(f"Invalid Arguments: {e.args[0]}\n")
         sys.exit(1)
-    session = login(args.host, args.user, args.passwd)
 
-    xdsl = scrape_xdsl(session, args.host)[0]["result"] if not args.traffic_only else None
-    traffic = scrape_traffic(session, args.host) if not args.xdsl_only else None
-
-    if args.raw:
-        if xdsl is not None:
-            print(xdsl)
-        if traffic is not None:
-            print(traffic)
+    if args.serve:
+        serve(args)
     else:
-        print(prometheus(xdsl, traffic))
+        session = login(args.host, args.user, args.passwd)
+        xdsl = scrape_xdsl(session, args.host) if not args.traffic_only else None
+        traffic = scrape_traffic(session, args.host) if not args.xdsl_only else None
+
+        if args.raw:
+            if xdsl is not None:
+                print(xdsl)
+            if traffic is not None:
+                print(traffic)
+        else:
+            print(prometheus(xdsl, traffic))
 
 if __name__ == "__main__":
     main()
