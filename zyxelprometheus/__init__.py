@@ -21,4 +21,4 @@ from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
 from .server import serve
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
