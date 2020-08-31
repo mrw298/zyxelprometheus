@@ -71,7 +71,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self.wfile.write(prometheus(xdsl, traffic).encode("utf8"))
 
 
-def serve(args): # pragma: no cover
+def serve(args):  # pragma: no cover
     Handler.scraper = Scraper(args)
     server = http.server.HTTPServer(args.bind, Handler)
     server.serve_forever()

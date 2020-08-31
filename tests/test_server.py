@@ -25,6 +25,10 @@ from zyxelprometheus.server import Handler, Scraper
 XDSL = open("example_xdsl.txt").read()
 TRAFFIC = open("example_traffic.json").read()
 
+TRAFFIC_URL = "https://192.168.1.1/cgi-bin/DAL?oid=Traffic_Status"
+XDSL_URL = "https://192.168.1.1/cgi-bin/xDSLStatistics_handle?line=0"
+
+
 class MockHandler(Handler):
     def __init__(self):
         self.wfile = io.BytesIO()
@@ -32,6 +36,7 @@ class MockHandler(Handler):
         self.client_address = ("127.0.0.1", 8000)
         self.request_version = "1.0"
         self.command = "GET"
+
 
 class TestServer(unittest.TestCase):
     def test_index(self):
@@ -52,11 +57,11 @@ class TestServer(unittest.TestCase):
 
     @responses.activate
     def test_metrics(self):
-        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+        responses.add(responses.POST, "https://192.168.1.1/UserLogin",
                       status=200)
-        responses.add(responses.GET, 'https://192.168.1.1/cgi-bin/xDSLStatistics_handle?line=0',
+        responses.add(responses.GET, XDSL_URL,
                       status=200, body=json.dumps([{"result": XDSL}]))
-        responses.add(responses.GET, 'https://192.168.1.1/cgi-bin/DAL?oid=Traffic_Status',
+        responses.add(responses.GET, TRAFFIC_URL,
                       status=200, body=TRAFFIC)
 
         class Args:
@@ -73,4 +78,5 @@ class TestServer(unittest.TestCase):
         handler.do_GET()
 
         handler.wfile.seek(0)
-        self.assertTrue("zyxel_line_rate" in handler.wfile.read().decode("utf8"))
+        self.assertTrue(
+            "zyxel_line_rate" in handler.wfile.read().decode("utf8"))
