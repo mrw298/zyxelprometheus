@@ -20,13 +20,25 @@ import unittest
 
 import responses
 
-from zyxelprometheus import login, InvalidPassword
+from zyxelprometheus import login, logout, InvalidPassword
+
+RESPONSE = json.dumps({
+    "sessionkey": 816284860,
+    "ThemeColor": "",
+    "changePw": False,
+    "showSkipBtn": False,
+    "quickStart": False,
+    "loginAccount": "admin",
+    "loginLevel": "medium",
+    "result": "ZCFG_SUCCESS"
+})
 
 
 class TestLogin(unittest.TestCase):
     @responses.activate
     def test_correct_password(self):
         responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+                      body=RESPONSE,
                       status=200)
 
         login("https://192.168.1.1", "admin", "testpassword")
@@ -48,3 +60,20 @@ class TestLogin(unittest.TestCase):
         data = json.loads(responses.calls[0].request.body)
         self.assertEqual("admin", data["Input_Account"])
         self.assertEqual(b"testpassword", b64decode(data["Input_Passwd"]))
+
+    @responses.activate
+    def test_correct_password(self):
+        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
+                      body=RESPONSE,
+                      status=200)
+        responses.add(responses.POST,
+                      "https://192.168.1.1/cgi-bin/UserLogout?"
+                      + "sessionkey=816284860",
+                      status=200)
+
+        session, sessionkey = login("https://192.168.1.1",
+                                    "admin",
+                                    "testpassword")
+
+        # This will raise a ConnectionError if we hit the wrong url.
+        logout(session, "https://192.168.1.1", sessionkey)

@@ -21,6 +21,8 @@ import responses
 
 from zyxelprometheus import login, scrape_xdsl, scrape_traffic
 
+from .test_login import RESPONSE as LOGIN_RESPONSE
+
 XDSL = open("example_xdsl.txt").read()
 TRAFFIC = open("example_traffic.json").read()
 
@@ -32,11 +34,14 @@ class TestScrape(unittest.TestCase):
     @responses.activate
     def test_scrape_xdsl(self):
         responses.add(responses.POST, "https://192.168.1.1/UserLogin",
+                      body=LOGIN_RESPONSE,
                       status=200)
         responses.add(responses.GET, XDSL_URL,
                       status=200, body=json.dumps([{"result": XDSL}]))
 
-        session = login("https://192.168.1.1", "admin", "testpassword")
+        session, sessionkey = login("https://192.168.1.1",
+                                    "admin",
+                                    "testpassword")
 
         xdsl = scrape_xdsl(session, "https://192.168.1.1")
 
@@ -45,11 +50,14 @@ class TestScrape(unittest.TestCase):
     @responses.activate
     def test_scrape_traffic(self):
         responses.add(responses.POST, "https://192.168.1.1/UserLogin",
+                      body=LOGIN_RESPONSE,
                       status=200)
         responses.add(responses.GET, TRAFFIC_URL,
                       status=200, body=TRAFFIC)
 
-        session = login("https://192.168.1.1", "admin", "testpassword")
+        session, sessionkey = login("https://192.168.1.1",
+                                    "admin",
+                                    "testpassword")
 
         traffic = scrape_traffic(session, "https://192.168.1.1")
 

@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from datetime import datetime
 import http.server
 
-from .login import login
+from .login import login, logout
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
 
@@ -25,12 +26,22 @@ class Scraper:
     def __init__(self, args):
         self.args = args
         self.session = None
+        self.sessionkey = None
+        self.login_time = None
 
     def scrape(self):
+        # Log out and start a new session every 30 seconds to avoid a bug
+        # that locks the user out of the router.
+        if self.login_time is not None and \
+                (datetime.utcnow() - self.login_time).total_seconds() > 30*60:
+            logout(self.session, self.args.host, self.sessionkey)
+            self.session, self.sessionkey, self.login_time = None, None, None
+
         if self.session is None:
-            self.session = login(self.args.host,
-                                 self.args.user,
-                                 self.args.passwd)
+            self.session, self.sessionkey = login(self.args.host,
+                                                  self.args.user,
+                                                  self.args.passwd)
+            self.login_time = datetime.utcnow()
 
         xdsl = scrape_xdsl(self.session, self.args.host) \
             if not self.args.traffic_only else None

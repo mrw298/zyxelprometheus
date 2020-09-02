@@ -16,7 +16,7 @@
 
 from .arguments import get_arguments
 from .exceptions import InvalidArguments, InvalidPassword
-from .login import login
+from .login import login, logout
 from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_traffic
 from .server import serve

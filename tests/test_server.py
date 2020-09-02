@@ -16,11 +16,14 @@
 
 import io
 import json
+from datetime import datetime, timedelta
 import unittest
 
 import responses
 
 from zyxelprometheus.server import Handler, Scraper
+
+from .test_login import RESPONSE as LOGIN_RESPONSE
 
 XDSL = open("example_xdsl.txt").read()
 TRAFFIC = open("example_traffic.json").read()
@@ -58,6 +61,7 @@ class TestServer(unittest.TestCase):
     @responses.activate
     def test_metrics(self):
         responses.add(responses.POST, "https://192.168.1.1/UserLogin",
+                      body=LOGIN_RESPONSE,
                       status=200)
         responses.add(responses.GET, XDSL_URL,
                       status=200, body=json.dumps([{"result": XDSL}]))
@@ -80,3 +84,45 @@ class TestServer(unittest.TestCase):
         handler.wfile.seek(0)
         self.assertTrue(
             "zyxel_line_rate" in handler.wfile.read().decode("utf8"))
+
+    @responses.activate
+    def test_relogin(self):
+        login_response = json.loads(LOGIN_RESPONSE)
+        login_response["sessionkey"] = 1234
+        login_response2 = json.dumps(login_response)
+
+        responses.add(responses.POST, "https://192.168.1.1/UserLogin",
+                      body=LOGIN_RESPONSE,
+                      status=200)
+        responses.add(responses.POST, "https://192.168.1.1/UserLogin",
+                      body=login_response2,
+                      status=200)
+        responses.add(responses.POST, "https://192.168.1.1/cgi-bin/UserLogout?"
+                      + "sessionkey=816284860",
+                      status=200)
+        responses.add(responses.GET, XDSL_URL,
+                      status=200, body=json.dumps([{"result": XDSL}]))
+        responses.add(responses.GET, TRAFFIC_URL,
+                      status=200, body=TRAFFIC)
+
+        class Args:
+            host = "https://192.168.1.1"
+            user = "testuser"
+            passwd = "testpasswd"
+            traffic_only = False
+            xdsl_only = False
+
+        MockHandler.scraper = Scraper(Args())
+
+        handler = MockHandler()
+        handler.path = "/metrics"
+        handler.do_GET()
+
+        MockHandler.scraper.login_time = \
+            datetime.utcnow() - timedelta(minutes=45)
+
+        handler = MockHandler()
+        handler.path = "/metrics"
+        handler.do_GET()
+
+        self.assertEquals(1234, MockHandler.scraper.sessionkey)

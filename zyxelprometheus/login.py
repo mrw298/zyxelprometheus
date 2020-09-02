@@ -24,6 +24,11 @@ from .exceptions import InvalidPassword
 # https://192.168.1.1/UserLogin
 # {"Input_Account":"admin","Input_Passwd":"c2hhZ2dpZTE:",
 #  "currLang":"en","RememberPassword":0,"SHA512_password":false}
+#
+# Response:
+# {"sessionkey":816284860,"ThemeColor":"","changePw":false,
+# "showSkipBtn":false,"quickStart":false,"loginAccount":"admin",
+# "loginLevel":"medium","result":"ZCFG_SUCCESS"}
 
 
 def login(host, username, password):
@@ -40,4 +45,10 @@ def login(host, username, password):
         raise InvalidPassword("Invalid username or password.")
     r.raise_for_status()
 
-    return session
+    return session, r.json()["sessionkey"]
+
+
+# /cgi-bin/UserLogout?sessionkey=816284860
+def logout(session, host, sessionkey):
+    r = session.post(host + f"/cgi-bin/UserLogout?sessionkey={sessionkey}")
+    r.raise_for_status()
