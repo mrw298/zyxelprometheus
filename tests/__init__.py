@@ -14,6 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from .mock_sshclient import MockSSHClient
+
+import paramiko.client
+
+paramiko.client.SSHClient = MockSSHClient
+
 from .test_arguments import TestArguments
 from .test_login import TestLogin
 from .test_prometheus import TestPrometheus

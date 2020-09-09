@@ -17,7 +17,7 @@
 
 import sys
 
-from zyxelprometheus import get_arguments, login, logout, prometheus, scrape_xdsl, scrape_traffic, serve
+from zyxelprometheus import get_arguments, login, logout, prometheus, scrape_ifconfig, scrape_xdsl, serve
 from zyxelprometheus import InvalidArguments
 
 def main():
@@ -30,9 +30,9 @@ def main():
     if args.serve:
         serve(args)
     else:
-        session, sessionkey = login(args.host, args.user, args.passwd)
-        xdsl = scrape_xdsl(session, args.host) if not args.traffic_only else None
-        traffic = scrape_traffic(session, args.host) if not args.xdsl_only else None
+        session = login(args.host, args.user, args.passwd)
+        xdsl = scrape_xdsl(session) if not args.ifconfig_only else None
+        traffic = scrape_ifconfig(session) if not args.xdsl_only else None
 
         if args.raw:
             if xdsl is not None:
@@ -42,7 +42,7 @@ def main():
         else:
             print(prometheus(xdsl, traffic))
 
-        logout(session, args.host, sessionkey)
+        logout(session)
 
 if __name__ == "__main__":
     main()

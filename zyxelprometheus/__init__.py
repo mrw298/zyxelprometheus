@@ -18,7 +18,7 @@ from .arguments import get_arguments
 from .exceptions import InvalidArguments, InvalidPassword
 from .login import login, logout
 from .prometheus import prometheus
-from .scrape import scrape_xdsl, scrape_traffic
+from .scrape import scrape_xdsl, scrape_ifconfig
 from .server import serve
 
 __version__ = "0.4.1"

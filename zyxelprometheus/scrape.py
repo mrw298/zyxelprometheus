@@ -14,11 +14,34 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-def scrape_xdsl(session, host):
-    r = session.get(host + "/cgi-bin/xDSLStatistics_handle?line=0")
-    return r.json()[0]["result"]
+import time
+
+PROMPT = "ZySH> "
+
+def _read_to_prompt(stdout):
+    endtime = time.time() + 5
+    chars = []
+    prompt = list(PROMPT)
+    while not stdout.channel.eof_received:
+        char = stdout.read(1).decode("utf8")
+        if char != "":
+            chars.append(char)
+            if chars[-len(prompt):] == prompt:
+                return "".join(chars[:-len(prompt)])
+        if time.time() > endtime:
+            stdout.channel.close()
+            break
+    return "".join(chars)
+
+def scrape_xdsl(session):
+    stdin, stdout, stderr = session.exec_command("", get_pty=True)
+    _read_to_prompt(stdout)
+    stdin.write("xdslctl info\n")
+    return _read_to_prompt(stdout)
 
 
-def scrape_traffic(session, host):
-    r = session.get(host + "/cgi-bin/DAL?oid=Traffic_Status")
-    return r.json()
+def scrape_ifconfig(session):
+    stdin, stdout, stderr = session.exec_command("", get_pty=True)
+    _read_to_prompt(stdout)
+    stdin.write("ifconfig\n")
+    return _read_to_prompt(stdout)

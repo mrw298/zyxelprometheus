@@ -17,10 +17,11 @@
 from base64 import b64decode
 import json
 import unittest
-
-import responses
+from unittest.mock import patch
 
 from zyxelprometheus import login, logout, InvalidPassword
+
+from .mock_sshclient import MockSSHClient, MockSSHSession
 
 RESPONSE = json.dumps({
     "sessionkey": 816284860,
@@ -35,45 +36,26 @@ RESPONSE = json.dumps({
 
 
 class TestLogin(unittest.TestCase):
-    @responses.activate
+    def setUp(self):
+        MockSSHClient.reset()
+
+        session = MockSSHSession()
+        MockSSHClient.add_session("192.168.1.1", "admin", "testpassword", session)
+
     def test_correct_password(self):
-        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
-                      body=RESPONSE,
-                      status=200)
+        session = login("192.168.1.1", "admin", "testpassword")
 
-        login("https://192.168.1.1", "admin", "testpassword")
+        self.assertIsNotNone(session.current_session)
 
-        self.assertEqual(1, len(responses.calls))
-        data = json.loads(responses.calls[0].request.body)
-        self.assertEqual("admin", data["Input_Account"])
-        self.assertEqual(b"testpassword", b64decode(data["Input_Passwd"]))
-
-    @responses.activate
     def test_wrong_password(self):
-        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
-                      status=401)
-
         with self.assertRaises(InvalidPassword):
-            login("https://192.168.1.1", "admin", "testpassword")
+            login("192.168.1.1", "admin", "wrongpassword")
 
-        self.assertEqual(1, len(responses.calls))
-        data = json.loads(responses.calls[0].request.body)
-        self.assertEqual("admin", data["Input_Account"])
-        self.assertEqual(b"testpassword", b64decode(data["Input_Passwd"]))
+    def test_logout(self):
+        session = login("192.168.1.1",
+                        "admin",
+                        "testpassword")
 
-    @responses.activate
-    def test_correct_password(self):
-        responses.add(responses.POST, 'https://192.168.1.1/UserLogin',
-                      body=RESPONSE,
-                      status=200)
-        responses.add(responses.POST,
-                      "https://192.168.1.1/cgi-bin/UserLogout?"
-                      + "sessionkey=816284860",
-                      status=200)
-
-        session, sessionkey = login("https://192.168.1.1",
-                                    "admin",
-                                    "testpassword")
-
-        # This will raise a ConnectionError if we hit the wrong url.
-        logout(session, "https://192.168.1.1", sessionkey)
+        logout(session)
+        
+        self.assertIsNone(session.current_session)

@@ -23,14 +23,14 @@ import responses
 from zyxelprometheus import prometheus
 
 XDSL = open("example_xdsl.txt").read()
-TRAFFIC = json.load(open("example_traffic.json"))
+IFCONFIG = open("example_ifconfig.txt").read()
 
 
 class TestPrometheus(unittest.TestCase):
     @responses.activate
     def test_values(self):
-        prom = prometheus(XDSL, TRAFFIC)
+        prom = prometheus(XDSL, IFCONFIG)
 
-        self.assertIn("""zyxel_line_rate{stream="up"} 7386169""", prom)
-        self.assertIn("""zyxel_packets{stream="up",iface="wan"}"""
-                      + """ 1201548572""", prom)
+        self.assertIn("""zyxel_line_rate{bearer=0,stream="up"} 7833000""", prom)
+        self.assertIn("""zyxel_packets{stream="tx",iface="ppp2.3"}"""
+                      + """ 7334759""", prom)

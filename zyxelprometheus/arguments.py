@@ -23,7 +23,7 @@ parser = argparse.ArgumentParser(
     description='Collect statistics from a Zyxel router and present them to '
     + 'Prometheus.')
 parser.add_argument('--host', type=str, nargs='?',
-                    default="https://192.168.1.1",
+                    default="192.168.1.1",
                     help='the host name to connect to '
                     + '(must start with https://)')
 parser.add_argument('--user', type=str, nargs='?', default="admin",
@@ -41,8 +41,8 @@ parser.add_argument('-d', '--serve', action="store_true", default=False,
 parser.add_argument('--raw', action="store_true", default=False,
                     help='prints out the raw values collected from the '
                     + 'router and exits')
-parser.add_argument('--traffic-only', action="store_true", default=False,
-                    help='only requests traffic data')
+parser.add_argument('--ifconfig-only', action="store_true", default=False,
+                    help='only requests ifconfig data')
 parser.add_argument('--xdsl-only', action="store_true", default=False,
                     help='only requests XDSL data')
 

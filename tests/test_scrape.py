@@ -17,48 +17,37 @@
 import json
 import unittest
 
-import responses
+from zyxelprometheus import login, scrape_ifconfig, scrape_xdsl
 
-from zyxelprometheus import login, scrape_xdsl, scrape_traffic
+from .mock_sshclient import MockSSHClient, MockSSHSession
 
-from .test_login import RESPONSE as LOGIN_RESPONSE
-
+IFCONFIG = open("example_ifconfig.txt").read()
 XDSL = open("example_xdsl.txt").read()
-TRAFFIC = open("example_traffic.json").read()
-
-TRAFFIC_URL = "https://192.168.1.1/cgi-bin/DAL?oid=Traffic_Status"
-XDSL_URL = "https://192.168.1.1/cgi-bin/xDSLStatistics_handle?line=0"
 
 
 class TestScrape(unittest.TestCase):
-    @responses.activate
+    def setUp(self):
+        MockSSHClient.reset()
+
+        session = MockSSHSession()
+        session.add_cmd("ifconfig\n", IFCONFIG)
+        session.add_cmd("xdslctl info\n", XDSL)
+        MockSSHClient.add_session("192.168.1.1", "admin", "testpassword", session)
+
+    def test_scrape_ifconfig(self):
+        session = login("192.168.1.1",
+                        "admin",
+                        "testpassword")
+
+        ifconfig = scrape_ifconfig(session)
+
+        self.assertTrue("192.168.1.1" in ifconfig)
+
     def test_scrape_xdsl(self):
-        responses.add(responses.POST, "https://192.168.1.1/UserLogin",
-                      body=LOGIN_RESPONSE,
-                      status=200)
-        responses.add(responses.GET, XDSL_URL,
-                      status=200, body=json.dumps([{"result": XDSL}]))
+        session = login("192.168.1.1",
+                        "admin",
+                        "testpassword")
 
-        session, sessionkey = login("https://192.168.1.1",
-                                    "admin",
-                                    "testpassword")
+        xdsl = scrape_xdsl(session)
 
-        xdsl = scrape_xdsl(session, "https://192.168.1.1")
-
-        self.assertTrue("VDSL Training Status" in xdsl)
-
-    @responses.activate
-    def test_scrape_traffic(self):
-        responses.add(responses.POST, "https://192.168.1.1/UserLogin",
-                      body=LOGIN_RESPONSE,
-                      status=200)
-        responses.add(responses.GET, TRAFFIC_URL,
-                      status=200, body=TRAFFIC)
-
-        session, sessionkey = login("https://192.168.1.1",
-                                    "admin",
-                                    "testpassword")
-
-        traffic = scrape_traffic(session, "https://192.168.1.1")
-
-        self.assertEquals("ZCFG_SUCCESS", traffic["result"])
+        self.assertTrue("Status: Showtime" in xdsl)
