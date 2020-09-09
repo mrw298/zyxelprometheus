@@ -42,6 +42,7 @@ iface_stats_map = [
     ("zyxel_dropped", "Bytes sent/received.", dropped_re),
 ]
 
+
 def prometheus(xdsl, ifconfig):
     output = []
     if xdsl is not None:
@@ -53,16 +54,23 @@ def prometheus(xdsl, ifconfig):
                 continue
             output.append("# HELP zyxel_line_rate The line rate.")
             output.append("# TYPE zyxel_line_rate gauge")
-            output.append(f"""zyxel_line_rate{{bearer={bearer},stream="up"}} {line_rate_up}""")
-            output.append(f"""zyxel_line_rate{{bearer={bearer},stream="down"}} {line_rate_down}""")
+            output.append(f"""zyxel_line_rate{{bearer={bearer},stream="up"}}"""
+                          + f""" {line_rate_up}""")
+            output.append(
+                f"""zyxel_line_rate{{bearer={bearer},stream="down"}}"""
+                + f""" {line_rate_down}""")
 
         max_line_rate = max_line_rate_re.search(xdsl)
         line_rate_up = int(max_line_rate.group("upstream"))*1000
         line_rate_down = int(max_line_rate.group("downstream"))*1000
-        output.append("# HELP zyxel_max_line_rate The maxiumum attainable line rate.")
-        output.append("# TYPE zyxel_max_line_rate gauge")
-        output.append(f"""zyxel_max_line_rate{{stream="up"}} {line_rate_up}""")
-        output.append(f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
+        output.append(
+            "# HELP zyxel_max_line_rate The maxiumum attainable line rate.")
+        output.append(
+            "# TYPE zyxel_max_line_rate gauge")
+        output.append(
+            f"""zyxel_max_line_rate{{stream="up"}} {line_rate_up}""")
+        output.append(
+            f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
 
     if ifconfig is not None:
         for iface in iface_re.finditer(ifconfig):
@@ -74,8 +82,9 @@ def prometheus(xdsl, ifconfig):
                 for groups in metric_re.finditer(iface_stats):
                     metric_stream = groups.group(1).lower()
                     metric_value = int(groups.group(2))
-                    output.append(f"""{metric}{{stream="{metric_stream}",iface="{iface_name}"}}"""
-                                + f""" {metric_value}""")
+                    output.append(
+                        f"""{metric}{{stream="{metric_stream}","""
+                        + f"""iface="{iface_name}"}} {metric_value}""")
 
     return "\n".join(output)
 

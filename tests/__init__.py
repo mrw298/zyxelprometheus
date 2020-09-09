@@ -20,8 +20,8 @@ import paramiko.client
 
 paramiko.client.SSHClient = MockSSHClient
 
-from .test_arguments import TestArguments
-from .test_login import TestLogin
-from .test_prometheus import TestPrometheus
-from .test_scrape import TestScrape
-from .test_server import TestServer
+from .test_arguments import TestArguments  # noqa
+from .test_login import TestLogin  # noqa
+from .test_prometheus import TestPrometheus  # noqa
+from .test_scrape import TestScrape  # noqa
+from .test_server import TestServer  # noqa

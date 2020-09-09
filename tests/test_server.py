@@ -43,7 +43,10 @@ class TestServer(unittest.TestCase):
         session = MockSSHSession()
         session.add_cmd("ifconfig\n", IFCONFIG)
         session.add_cmd("xdslctl info\n", XDSL)
-        MockSSHClient.add_session("192.168.1.1", "testuser", "testpassword", session)
+        MockSSHClient.add_session("192.168.1.1",
+                                  "testuser",
+                                  "testpassword",
+                                  session)
 
     def test_index(self):
         handler = MockHandler()

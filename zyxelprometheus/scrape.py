@@ -18,6 +18,7 @@ import time
 
 PROMPT = "ZySH> "
 
+
 def _read_to_prompt(stdout):
     endtime = time.time() + 5
     chars = []
@@ -32,6 +33,7 @@ def _read_to_prompt(stdout):
             stdout.channel.close()
             break
     return "".join(chars)
+
 
 def scrape_xdsl(session):
     stdin, stdout, stderr = session.exec_command("", get_pty=True)

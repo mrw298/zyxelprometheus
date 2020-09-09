@@ -32,7 +32,10 @@ class TestScrape(unittest.TestCase):
         session = MockSSHSession()
         session.add_cmd("ifconfig\n", IFCONFIG)
         session.add_cmd("xdslctl info\n", XDSL)
-        MockSSHClient.add_session("192.168.1.1", "admin", "testpassword", session)
+        MockSSHClient.add_session("192.168.1.1",
+                                  "admin",
+                                  "testpassword",
+                                  session)
 
     def test_scrape_ifconfig(self):
         session = login("192.168.1.1",

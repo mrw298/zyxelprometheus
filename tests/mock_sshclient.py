@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from paramiko.ssh_exception import AuthenticationException, NoValidConnectionsError
+from paramiko.ssh_exception import AuthenticationException, \
+                                   NoValidConnectionsError
 
 PROMPT = "ZySH> ".encode("utf8")
+
 
 class MockSSHClient:
     mock_sessions = {}
@@ -27,7 +29,9 @@ class MockSSHClient:
 
     def connect(self, hostname, username, password):
         if (hostname, username, password) in self.mock_sessions:
-            self.current_session = self.mock_sessions[(hostname, username, password)]
+            self.current_session = self.mock_sessions[(hostname,
+                                                       username,
+                                                       password)]
             return
 
         for session_key in self.mock_sessions.keys():
@@ -51,6 +55,7 @@ class MockSSHClient:
     @classmethod
     def add_session(cls, host, user, password, session):
         cls.mock_sessions[(host, user, password)] = session
+
 
 class MockSSHSession:
     def __init__(self):
@@ -77,6 +82,7 @@ class MockSSHSession:
             data = self.recv_buffer[:count]
             self.recv_buffer = self.recv_buffer[count:]
             return data
+
 
 class MockChannel:
     def __init__(self):

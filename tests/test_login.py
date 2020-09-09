@@ -40,7 +40,10 @@ class TestLogin(unittest.TestCase):
         MockSSHClient.reset()
 
         session = MockSSHSession()
-        MockSSHClient.add_session("192.168.1.1", "admin", "testpassword", session)
+        MockSSHClient.add_session("192.168.1.1",
+                                  "admin",
+                                  "testpassword",
+                                  session)
 
     def test_correct_password(self):
         session = login("192.168.1.1", "admin", "testpassword")
@@ -57,5 +60,5 @@ class TestLogin(unittest.TestCase):
                         "testpassword")
 
         logout(session)
-        
+
         self.assertIsNone(session.current_session)
