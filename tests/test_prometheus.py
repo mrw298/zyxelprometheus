@@ -18,8 +18,6 @@ from base64 import b64decode
 import json
 import unittest
 
-import responses
-
 from zyxelprometheus import prometheus
 
 XDSL = open("example_xdsl.txt").read()
@@ -27,7 +25,6 @@ IFCONFIG = open("example_ifconfig.txt").read()
 
 
 class TestPrometheus(unittest.TestCase):
-    @responses.activate
     def test_values(self):
         prom = prometheus(XDSL, IFCONFIG)
 

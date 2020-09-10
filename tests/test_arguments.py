@@ -17,8 +17,6 @@
 import os
 import unittest
 
-import responses
-
 from zyxelprometheus import get_arguments, InvalidArguments
 
 
