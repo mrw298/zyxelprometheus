@@ -69,7 +69,7 @@ class TestServer(unittest.TestCase):
             host = "192.168.1.1"
             user = "testuser"
             passwd = "testpassword"
-            traffic_only = False
+            ifconfig_only = False
             xdsl_only = False
 
         MockHandler.scraper = Scraper(Args())

@@ -34,7 +34,7 @@ class Scraper:
                                  self.args.passwd)
 
         xdsl = scrape_xdsl(self.session) \
-            if not self.args.traffic_only else None
+            if not self.args.ifconfig_only else None
         ifconfig = scrape_ifconfig(self.session) \
             if not self.args.xdsl_only else None
 
