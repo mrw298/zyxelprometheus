@@ -32,15 +32,15 @@ def main():
     else:
         session = login(args.host, args.user, args.passwd)
         xdsl = scrape_xdsl(session) if not args.ifconfig_only else None
-        traffic = scrape_ifconfig(session) if not args.xdsl_only else None
+        ifconfig = scrape_ifconfig(session) if not args.xdsl_only else None
 
         if args.raw:
             if xdsl is not None:
                 print(xdsl)
-            if traffic is not None:
-                print(traffic)
+            if ifconfig is not None:
+                print(ifconfig)
         else:
-            print(prometheus(xdsl, traffic))
+            print(prometheus(xdsl, ifconfig))
 
         logout(session)
 
