@@ -87,3 +87,6 @@ class MockSSHSession:
 class MockChannel:
     def __init__(self):
         self.eof_received = False
+
+    def close(self):
+        pass

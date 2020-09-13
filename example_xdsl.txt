@@ -7,4 +7,3 @@ Last initialization procedure status:	0
 Max:	Upstream rate = 7833 Kbps, Downstream rate = 47522 Kbps
 Bearer:	0, Upstream rate = 7833 Kbps, Downstream rate = 39999 Kbps
 Bearer:	1, Upstream rate = 0 Kbps, Downstream rate = 0 Kbps
-

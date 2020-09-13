@@ -20,8 +20,8 @@ import unittest
 
 from zyxelprometheus import prometheus
 
-XDSL = open("example_xdsl.txt").read()
-IFCONFIG = open("example_ifconfig.txt").read()
+XDSL = open("example_xdsl.txt", "rb").read().decode("utf8")
+IFCONFIG = open("example_ifconfig.txt", "rb").read().decode("utf8")
 
 
 class TestPrometheus(unittest.TestCase):

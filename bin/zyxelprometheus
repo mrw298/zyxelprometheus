@@ -38,7 +38,7 @@ def main():
             if xdsl is not None:
                 print(xdsl)
             if ifconfig is not None:
-                print(ifconfig)
+                print(repr(ifconfig))
         else:
             print(prometheus(xdsl, ifconfig))
 

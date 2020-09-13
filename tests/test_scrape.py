@@ -21,8 +21,8 @@ from zyxelprometheus import login, scrape_ifconfig, scrape_xdsl
 
 from .mock_sshclient import MockSSHClient, MockSSHSession
 
-IFCONFIG = open("example_ifconfig.txt").read()
-XDSL = open("example_xdsl.txt").read()
+IFCONFIG = open("example_ifconfig.txt", "rb").read().decode("utf8")
+XDSL = open("example_xdsl.txt", "rb").read().decode("utf8")
 
 
 class TestScrape(unittest.TestCase):

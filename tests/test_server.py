@@ -23,8 +23,8 @@ from zyxelprometheus.server import Handler, Scraper
 
 from .mock_sshclient import MockSSHClient, MockSSHSession
 
-XDSL = open("example_xdsl.txt").read()
-IFCONFIG = open("example_ifconfig.txt").read()
+XDSL = open("example_xdsl.txt", "rb").read().decode("utf8")
+IFCONFIG = open("example_ifconfig.txt", "rb").read().decode("utf8")
 
 
 class MockHandler(Handler):

@@ -73,12 +73,12 @@ def prometheus(xdsl, ifconfig):
             f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
 
     if ifconfig is not None:
-        for iface in iface_re.finditer(ifconfig):
-            iface_name = iface.group(1)
-            iface_stats = iface.group(2)
-            for (metric, help, metric_re) in iface_stats_map:
-                output.append(f"# HELP {metric} {help}")
-                output.append(f"# TYPE {metric} counter")
+        for (metric, help, metric_re) in iface_stats_map:
+            output.append(f"# HELP {metric} {help}")
+            output.append(f"# TYPE {metric} counter")
+            for iface in iface_re.finditer(ifconfig.replace("\r\n", "\n")):
+                iface_name = iface.group(1)
+                iface_stats = iface.group(2)
                 for groups in metric_re.finditer(iface_stats):
                     metric_stream = groups.group(1).lower()
                     metric_value = int(groups.group(2))
