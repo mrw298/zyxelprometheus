@@ -54,10 +54,10 @@ def prometheus(xdsl, ifconfig):
                 continue
             output.append("# HELP zyxel_line_rate The line rate.")
             output.append("# TYPE zyxel_line_rate gauge")
-            output.append(f"""zyxel_line_rate{{bearer={bearer},stream="up"}}"""
-                          + f""" {line_rate_up}""")
+            output.append(f"""zyxel_line_rate{{bearer=\"{bearer}\","""
+                          + f"""stream="up"}} {line_rate_up}""")
             output.append(
-                f"""zyxel_line_rate{{bearer={bearer},stream="down"}}"""
+                f"""zyxel_line_rate{{bearer=\"{bearer}\",stream="down"}}"""
                 + f""" {line_rate_down}""")
 
         max_line_rate = max_line_rate_re.search(xdsl)
