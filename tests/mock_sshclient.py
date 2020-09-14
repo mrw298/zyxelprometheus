@@ -69,7 +69,8 @@ class MockSSHSession:
 
     def write(self, cmd):
         if cmd in self.cmds:
-            self.recv_buffer = cmd.replace("\n", "\r\n").encode("utf8") + self.cmds[cmd]
+            self.recv_buffer = cmd.replace("\n", "\r\n").encode("utf8") \
+                             + self.cmds[cmd]
         else:
             raise ValueError(f"Unset command used. {repr(cmd)}")
 
