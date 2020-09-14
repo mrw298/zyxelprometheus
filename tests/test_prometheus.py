@@ -28,7 +28,7 @@ class TestPrometheus(unittest.TestCase):
     def test_values(self):
         prom = prometheus(XDSL, IFCONFIG)
 
-        self.assertIn("""zyxel_line_rate{bearer=0,stream="up"} 7833000""",
+        self.assertIn("""zyxel_line_rate{bearer="0",stream="up"} 7833000""",
                       prom)
         self.assertIn("""zyxel_packets{stream="tx",iface="ppp2.3"}"""
                       + """ 7334759""", prom)
