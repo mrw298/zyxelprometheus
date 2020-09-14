@@ -21,4 +21,4 @@ from .prometheus import prometheus
 from .scrape import scrape_xdsl, scrape_ifconfig
 from .server import serve
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
