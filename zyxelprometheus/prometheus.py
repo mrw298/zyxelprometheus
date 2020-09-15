@@ -87,11 +87,3 @@ def prometheus(xdsl, ifconfig):
                         + f"""iface="{iface_name}"}} {metric_value}""")
 
     return "\n".join(output)
-
-
-def get_iface_names(traffic):
-    r = {}
-    for idx in range(len(traffic["Object"][0]["ipIface"])):
-        if traffic["Object"][0]["ipIface"][idx]["Status"] == "Up":
-            r[traffic["Object"][0]["ipIface"][idx]["Name"].lower()] = idx
-    return r
