@@ -19,7 +19,7 @@ import unittest
 
 from zyxelprometheus import login, scrape_ifconfig, scrape_xdsl
 
-from .mock_sshclient import MockSSHClient, MockSSHSession
+from .mock_sshclient import MockSSHClient, MockSSHSession, MockHungSSHSession
 
 IFCONFIG = open("example_ifconfig.txt", "rb").read().decode("utf8")
 XDSL = open("example_xdsl.txt", "rb").read().decode("utf8")
@@ -54,3 +54,16 @@ class TestScrape(unittest.TestCase):
         xdsl = scrape_xdsl(session)
 
         self.assertTrue("Status: Showtime" in xdsl)
+
+    def test_timeout(self):
+        session = MockHungSSHSession()
+        MockSSHClient.add_session("192.168.1.1",
+                                  "admin",
+                                  "testpassword",
+                                  session)
+
+        session = login("192.168.1.1",
+                        "admin",
+                        "testpassword")
+
+        xdsl = scrape_xdsl(session)

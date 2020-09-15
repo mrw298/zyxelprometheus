@@ -14,6 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import time
+
 from paramiko.ssh_exception import AuthenticationException, \
                                    NoValidConnectionsError
 
@@ -83,6 +85,18 @@ class MockSSHSession:
             data = self.recv_buffer[:count]
             self.recv_buffer = self.recv_buffer[count:]
             return data
+
+
+class MockHungSSHSession:
+    def __init__(self):
+        self.channel = MockChannel()
+
+    def write(self, cmd):
+        pass
+
+    def read(self, count):
+        time.sleep(6)
+        return "".encode("utf8")
 
 
 class MockChannel:
