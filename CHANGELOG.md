@@ -2,6 +2,10 @@
 
 <!--next-version-placeholder-->
 
+## v0.5.5 (2021-03-10)
+### Fix
+* Make docker_push.sh executable. ([`2e89784`](https://github.com/andrewjw/zyxelprometheus/commit/2e897846da7199687c919096a05b4de79811742a))
+
 ## v0.5.4 (2021-03-09)
 ### Fix
 * Fix copy and paste errors. ([`4bd3aa0`](https://github.com/andrewjw/zyxelprometheus/commit/4bd3aa011ae6e104c5f2b9212a24b916e1257912))
