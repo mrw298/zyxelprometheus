@@ -14,39 +14,39 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
-
-PROMPT = "ZySH> "
-
-
-def _read_to(stdout, readto):
-    endtime = time.time() + 5
-    chars = []
-    lreadto = list(readto)
-    while not stdout.channel.eof_received:
-        char = stdout.read(1).decode("utf8")
-        if char != "":
-            chars.append(char)
-            if chars[-len(readto):] == lreadto:
-                return "".join(chars[:-len(readto)])
-        if time.time() > endtime:
-            stdout.channel.close()
-            break
-    return "".join(chars)
-
-
-def execute(cmd, stdin, stdout):
-    _read_to(stdout, PROMPT)
-    stdin.write(cmd + "\n")
-    _read_to(stdout, cmd + "\r\n")
-    return _read_to(stdout, PROMPT)
-
-
-def scrape_xdsl(session):
-    stdin, stdout, stderr = session.exec_command("", get_pty=True)
-    return execute("xdslctl info", stdin, stdout)
-
-
-def scrape_ifconfig(session):
-    stdin, stdout, stderr = session.exec_command("", get_pty=True)
-    return execute("ifconfig", stdin, stdout)
+# import time
+#
+# PROMPT = "ZySH> "
+#
+#
+# def _read_to(stdout, readto):
+#     endtime = time.time() + 5
+#     chars = []
+#     lreadto = list(readto)
+#     while not stdout.channel.eof_received:
+#         char = stdout.read(1).decode("utf8")
+#         if char != "":
+#             chars.append(char)
+#             if chars[-len(readto):] == lreadto:
+#                 return "".join(chars[:-len(readto)])
+#         if time.time() > endtime:
+#             stdout.channel.close()
+#             break
+#     return "".join(chars)
+#
+#
+# def execute(cmd, stdin, stdout):
+#     _read_to(stdout, PROMPT)
+#     stdin.write(cmd + "\n")
+#     _read_to(stdout, cmd + "\r\n")
+#     return _read_to(stdout, PROMPT)
+#
+#
+# def scrape_xdsl(session):
+#     stdin, stdout, stderr = session.exec_command("", get_pty=True)
+#     return execute("xdslctl info", stdin, stdout)
+#
+#
+# def scrape_ifconfig(session):
+#     stdin, stdout, stderr = session.exec_command("", get_pty=True)
+#     return execute("ifconfig", stdin, stdout)

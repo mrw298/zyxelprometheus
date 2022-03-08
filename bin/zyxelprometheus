@@ -1,4 +1,4 @@
-#!/usr/bin/env python3.8
+#!/usr/bin/env python3
 # zyxelprometheus
 # Copyright (C) 2020 Andrew Wilkinson
 #
@@ -17,8 +17,11 @@
 
 import sys
 
-from zyxelprometheus import get_arguments, login, logout, prometheus, scrape_ifconfig, scrape_xdsl, serve
+# from zyxelprometheus import get_arguments, login, logout, prometheus, scrape_ifconfig, scrape_xdsl, serve, VMG1312B10D
+from zyxelprometheus import get_arguments, login, logout, prometheus, serve
 from zyxelprometheus import InvalidArguments
+from zyxelprometheus.server import Scraper
+
 
 def main():
     try:
@@ -30,9 +33,12 @@ def main():
     if args.serve:
         serve(args)
     else:
-        session = login(args.host, args.user, args.passwd)
-        xdsl = scrape_xdsl(session) if not args.ifconfig_only else None
-        ifconfig = scrape_ifconfig(session) if not args.xdsl_only else None
+        # session = login(args.host, args.user, args.passwd)
+        #
+        # device = VMG1312B10D(session)
+
+        scraper = Scraper(args)
+        xdsl, ifconfig = scraper.scrape()
 
         if args.raw:
             if xdsl is not None:
@@ -40,9 +46,10 @@ def main():
             if ifconfig is not None:
                 print(repr(ifconfig))
         else:
-            print(prometheus(xdsl, ifconfig))
+            print(prometheus(xdsl, ifconfig, scraper.device))
 
-        logout(session)
+        logout(scraper.session)
+
 
 if __name__ == "__main__":
     main()

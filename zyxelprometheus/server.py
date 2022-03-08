@@ -17,15 +17,17 @@
 from datetime import datetime
 import http.server
 
+from .devices import VMG1312B10D, VMG1312T20B
 from .login import login, logout
 from .prometheus import prometheus
-from .scrape import scrape_ifconfig, scrape_xdsl
+# from .scrape import scrape_ifconfig, scrape_xdsl
 
 
 class Scraper:
     def __init__(self, args):
         self.args = args
         self.session = None
+        self.device = None
 
     def scrape(self):
         if self.session is None:
@@ -33,9 +35,12 @@ class Scraper:
                                  self.args.user,
                                  self.args.passwd)
 
-        xdsl = scrape_xdsl(self.session) \
+            # self.device = VMG1312B10D(self.session)
+            self.device = VMG1312T20B(self.session)
+
+        xdsl = self.device.scrape_xdsl() \
             if not self.args.ifconfig_only else None
-        ifconfig = scrape_ifconfig(self.session) \
+        ifconfig = self.device.scrape_ifconfig() \
             if not self.args.xdsl_only else None
 
         return xdsl, ifconfig
@@ -66,10 +71,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
 
     def send_metrics(self):
         xdsl, ifconfig = self.scraper.scrape()
+        # Todo: bit bodgy
+        device = self.scraper.device
 
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(prometheus(xdsl, ifconfig).encode("utf8"))
+        self.wfile.write(prometheus(xdsl, ifconfig, device).encode("utf8"))
 
 
 def serve(args):  # pragma: no cover
