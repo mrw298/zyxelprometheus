@@ -57,12 +57,12 @@ class VMG1312T20B(ZyxelBase):
     # tone 224-255: aa aa aa ab aa aa aa aa aa aa 9a aa 9a aa aa aa
 
     max_line_rate_re = re.compile(
-        r"near-end interleaved channel bit rate: (?P<upstream>\d+) kbps.+"
-        + r"far-end fast channel bit rate: (?P<downstream>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
+        r"near-end interleaved channel bit rate: (?P<downstream>\d+) kbps.+"
+        + r"far-end fast channel bit rate: (?P<upstream>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
 
     line_errors_re = re.compile(
-        r"near-end FEC error interleaved: (?P<upstream_errors>\d+).+"
-        + r"far-end FEC error fast: (?P<downstream_errors>\d+)", flags=re.MULTILINE | re.DOTALL)
+        r"near-end FEC error interleaved: (?P<downstream_errors>\d+).+"
+        + r"far-end FEC error fast: (?P<upstream_errors>\d+)", flags=re.MULTILINE | re.DOTALL)
 
     # line_rate_re = re.compile(
     #     r"Bearer:\s+(?P<bearer>\d), Upstream rate = (?P<upstream>\d+) Kbps,\s+"
