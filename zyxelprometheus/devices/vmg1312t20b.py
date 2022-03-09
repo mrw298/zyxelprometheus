@@ -70,34 +70,6 @@ class VMG1312T20B(ZyxelBase):
         , flags=re.MULTILINE | re.DOTALL
     )
 
-    # line_rate_re = re.compile(
-    #     r"Bearer:\s+(?P<bearer>\d), Upstream rate = (?P<upstream>\d+) Kbps,\s+"
-    #     + r"Downstream rate = (?P<downstream>\d+) Kbps")
-
-    # br0       Link encap:Ethernet  HWaddr EC:3E:B3:E3:D5:C0
-    #           inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
-    #           inet6 addr: fe80::ee3e:b3ff:fee3:d5c0/64 Scope:Link
-    #           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-    #           RX packets:106063 errors:0 dropped:0 overruns:0 frame:0
-    #           TX packets:29208 errors:0 dropped:0 overruns:0 carrier:0
-    #           collisions:0 txqueuelen:0
-    #           RX bytes:27056367 (25.8 MiB)  TX bytes:6642360 (6.3 MiB)
-
-    iface_re = re.compile(r"^([\w.]+)\s+(.*?)^$", re.MULTILINE | re.DOTALL)
-
-    packets_re = re.compile(r"(RX|TX) packets:(\d+)")
-    errors_re = re.compile(r"(RX|TX).*errors:(\d+)")
-    dropped_re = re.compile(r"(RX|TX).*dropped:(\d+)")
-
-    bytes_re = re.compile(r"(RX|TX) bytes:(\d+)")
-
-    iface_stats_map = [
-        ("zyxel_bytes", "Bytes sent/received.", bytes_re),
-        ("zyxel_packets", "Bytes sent/received.", packets_re),
-        ("zyxel_errors", "Bytes sent/received.", errors_re),
-        ("zyxel_dropped", "Bytes sent/received.", dropped_re),
-    ]
-
     def __init__(self, session=None):
         assert session is not None
         self._session = session
@@ -119,32 +91,9 @@ class VMG1312T20B(ZyxelBase):
     def parse_xdsl(self, xdsl):
         output = []
         if xdsl is not None:
-            # for line_rate in self.line_rate_re.finditer(xdsl):
-            #     bearer = int(line_rate.group("bearer"))
-            #     line_rate_up = int(line_rate.group("upstream")) * 1000
-            #     line_rate_down = int(line_rate.group("downstream")) * 1000
-            #     if line_rate_up == 0 and line_rate_down == 0:
-            #         continue
-            #     output.append("# HELP zyxel_line_rate The line rate.")
-            #     output.append("# TYPE zyxel_line_rate gauge")
-            #     output.append(f"""zyxel_line_rate{{bearer=\"{bearer}\","""
-            #                   + f"""stream="up"}} {line_rate_up}""")
-            #     output.append(
-            #         f"""zyxel_line_rate{{bearer=\"{bearer}\",stream="down"}}"""
-            #         + f""" {line_rate_down}""")
-
             max_line_rate = self.max_line_rate_re.search(xdsl)
             if max_line_rate is not None:
-                line_rate_up = int(max_line_rate.group("upstream")) * 1000
-                line_rate_down = int(max_line_rate.group("downstream")) * 1000
-                output.append(
-                    "# HELP zyxel_max_line_rate The maxiumum attainable line rate.")
-                output.append(
-                    "# TYPE zyxel_max_line_rate gauge")
-                output.append(
-                    f"""zyxel_max_line_rate{{stream="up"}} {line_rate_up}""")
-                output.append(
-                    f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
+                self.parse_xdsl_max_line_rate(max_line_rate, output)
 
             line_errors = self.line_errors_re.search(xdsl)
             if line_errors is not None:
@@ -159,20 +108,3 @@ class VMG1312T20B(ZyxelBase):
                             f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
         return output
 
-    def parse_ifconfig(self, ifconfig):
-        output = []
-        if ifconfig is not None:
-            for (metric, help, metric_re) in self.iface_stats_map:
-                output.append(f"# HELP {metric} {help}")
-                output.append(f"# TYPE {metric} counter")
-                for iface in self.iface_re.finditer(ifconfig.replace("\r\n", "\n")):
-                    iface_name = iface.group(1)
-                    iface_stats = iface.group(2)
-                    for groups in metric_re.finditer(iface_stats):
-                        metric_stream = groups.group(1).lower()
-                        metric_value = int(groups.group(2))
-                        output.append(
-                            f"""{metric}{{stream="{metric_stream}","""
-                            + f"""iface="{iface_name}"}} {metric_value}""")
-
-        return output

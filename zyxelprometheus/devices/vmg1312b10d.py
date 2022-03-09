@@ -20,30 +20,6 @@ class VMG1312B10D(ZyxelBase):
         r"Bearer:\s+(?P<bearer>\d), Upstream rate = (?P<upstream>\d+) Kbps,\s+"
         + r"Downstream rate = (?P<downstream>\d+) Kbps")
 
-    # br0       Link encap:Ethernet  HWaddr E4:18:6B:06:87:70
-    #           inet addr:192.168.1.1  Bcast:192.168.1.255  Mask:255.255.255.0
-    #           inet6 addr: fe80::e618:6bff:fe06:8770/64 Scope:Link
-    #           UP BROADCAST RUNNING ALLMULTI MULTICAST  MTU:1500  Metric:1
-    #           RX packets:7968422 errors:0 dropped:19510 overruns:0 frame:0
-    #           TX packets:11495200 errors:0 dropped:0 overruns:0 carrier:0
-    #           collisions:0 txqueuelen:0
-    #           RX bytes:2713281739 (2.5 GiB)  TX bytes:1342943018 (1.2 GiB)
-
-    iface_re = re.compile(r"^([\w.]+)\s+(.*?)^$", re.MULTILINE | re.DOTALL)
-
-    packets_re = re.compile(r"(RX|TX) packets:(\d+)")
-    errors_re = re.compile(r"(RX|TX).*errors:(\d+)")
-    dropped_re = re.compile(r"(RX|TX).*dropped:(\d+)")
-
-    bytes_re = re.compile(r"(RX|TX) bytes:(\d+)")
-
-    iface_stats_map = [
-        ("zyxel_bytes", "Bytes sent/received.", bytes_re),
-        ("zyxel_packets", "Bytes sent/received.", packets_re),
-        ("zyxel_errors", "Bytes sent/received.", errors_re),
-        ("zyxel_dropped", "Bytes sent/received.", dropped_re),
-    ]
-
     def __init__(self, session=None):
         assert session is not None
         self._session = session
@@ -79,33 +55,8 @@ class VMG1312B10D(ZyxelBase):
                     f"""zyxel_line_rate{{bearer=\"{bearer}\",stream="down"}}"""
                     + f""" {line_rate_down}""")
 
+            # Get the max line rate
             max_line_rate = self.max_line_rate_re.search(xdsl)
-            line_rate_up = int(max_line_rate.group("upstream")) * 1000
-            line_rate_down = int(max_line_rate.group("downstream")) * 1000
-            output.append(
-                "# HELP zyxel_max_line_rate The maxiumum attainable line rate.")
-            output.append(
-                "# TYPE zyxel_max_line_rate gauge")
-            output.append(
-                f"""zyxel_max_line_rate{{stream="up"}} {line_rate_up}""")
-            output.append(
-                f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
-        return output
-
-    def parse_ifconfig(self, ifconfig):
-        output = []
-        if ifconfig is not None:
-            for (metric, help, metric_re) in self.iface_stats_map:
-                output.append(f"# HELP {metric} {help}")
-                output.append(f"# TYPE {metric} counter")
-                for iface in self.iface_re.finditer(ifconfig.replace("\r\n", "\n")):
-                    iface_name = iface.group(1)
-                    iface_stats = iface.group(2)
-                    for groups in metric_re.finditer(iface_stats):
-                        metric_stream = groups.group(1).lower()
-                        metric_value = int(groups.group(2))
-                        output.append(
-                            f"""{metric}{{stream="{metric_stream}","""
-                            + f"""iface="{iface_name}"}} {metric_value}""")
+            self.parse_xdsl_max_line_rate(max_line_rate, output)
 
         return output
