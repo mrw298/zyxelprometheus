@@ -1,5 +1,6 @@
 import time
 import re
+from typing import Optional
 
 
 class ZyxelBase:
@@ -44,6 +45,50 @@ class ZyxelBase:
                 break
         return "".join(chars)
 
+    # ZySH> zycli sys atsh
+    # Firmware Version        : V5.30(ABSB.5)C0
+    # Bootbase Version        : V1.32 | 11/20/2019 20:46:02
+    # Vendor Name             : Zyxel Communications Corp.
+    # Product Model           : VMG1312-T20B
+    # Serial Number           : S210Y36041996
+    # First MAC Address       : EC3EB3E3D5C0
+    # Last MAC Address        : EC3EB3E3D5C7
+    # MAC Address Quantity    : 08
+    # Default Country Code    : 00
+    # Boot Module Debug Flag  : 00
+    # Kernel Checksum         : F3A8F377
+    # RootFS Checksum         : A096DA5D
+    # Romfile Checksum        : 0000CBF0
+    # Main Feature Bits       : 00
+    # Other Feature Bits      :
+    # 7ffc3461: 04050508 00000100 00000000 00000000
+    # 7ffc3471: 00000000 00000000 00000000
+
+    @staticmethod
+    def get_device(session=None) -> Optional["ZyxelBase"]:
+        assert session is not None
+        stdin, stdout, stderr = session.exec_command("", get_pty=True)
+
+        zyxel_base = ZyxelBase()
+        cmd_return_value = zyxel_base.execute("zycli sys atsh", stdin, stdout)
+        product_model_match = re.search(
+            r"Product Model.+: (?P<product_model>[\w-]+)",
+            cmd_return_value,
+            flags=re.MULTILINE
+        )
+
+        # Cut through
+        if product_model_match is None:
+            return None
+
+        product_model = product_model_match.group('product_model')
+        if product_model is not None and product_model == 'VMG1312-T20B':
+            from .vmg1312t20b import VMG1312T20B
+            return VMG1312T20B(session=session)
+        else:
+            from .vmg1312b10d import VMG1312B10D
+            return VMG1312B10D(session=session)
+
     def parse_xdsl(self, xdsl):
         raise NotImplementedError
 
@@ -65,6 +110,12 @@ class ZyxelBase:
 
         return output
 
+    def scrape_xdsl(self):
+        raise NotImplementedError
+
+    def scrape_ifconfig(self):
+        raise NotImplementedError
+
     # def parse_ifconfig(self, ifconfig):
     #     raise NotImplementedError
 
@@ -79,4 +130,10 @@ class ZyxelBase:
             f"""zyxel_max_line_rate{{stream="up"}} {line_rate_up}""")
         output.append(
             f"""zyxel_max_line_rate{{stream="down"}} {line_rate_down}""")
+
+    def execute(self, cmd, stdin, stdout):
+        self._read_to(stdout, self.PROMPT)
+        stdin.write(cmd + "\n")
+        self._read_to(stdout, cmd + "\r\n")
+        return self._read_to(stdout, self.PROMPT)
 

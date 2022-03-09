@@ -14,11 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
+# from datetime import datetime
 import http.server
 
-from .devices import VMG1312B10D, VMG1312T20B
-from .login import login, logout
+from .devices import ZyxelBase
+from .login import login
 from .prometheus import prometheus
 # from .scrape import scrape_ifconfig, scrape_xdsl
 
@@ -36,7 +36,8 @@ class Scraper:
                                  self.args.passwd)
 
             # self.device = VMG1312B10D(self.session)
-            self.device = VMG1312T20B(self.session)
+            # self.device = VMG1312T20B(self.session)
+            self.device = ZyxelBase.get_device(self.session)
 
         xdsl = self.device.scrape_xdsl() \
             if not self.args.ifconfig_only else None

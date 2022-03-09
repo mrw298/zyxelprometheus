@@ -74,12 +74,6 @@ class VMG1312T20B(ZyxelBase):
         assert session is not None
         self._session = session
 
-    def execute(self, cmd, stdin, stdout):
-        self._read_to(stdout, self.PROMPT)
-        stdin.write(cmd + "\n")
-        self._read_to(stdout, cmd + "\r\n")
-        return self._read_to(stdout, self.PROMPT)
-
     def scrape_xdsl(self):
         stdin, stdout, stderr = self._session.exec_command("", get_pty=True)
         return self.execute("dsllinestatus", stdin, stdout)
