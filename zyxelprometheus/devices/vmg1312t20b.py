@@ -95,9 +95,9 @@ class VMG1312T20B(ZyxelBase):
                     "# HELP zyxel_line_errors The errors on the line.")
                 output.append(
                     "# TYPE zyxel_line_errors counter")
-                for direction in ["upstream", "downstream"]:
+                for direction in ["up", "down"]:
                     for error_type in ["fec", "crc", "hec"]:
-                        error_rate = int(line_errors.group(f"{direction}_{error_type}_errors"))
+                        error_rate = int(line_errors.group(f"{direction}stream_{error_type}_errors"))
                         output.append(
                             f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
         return output
