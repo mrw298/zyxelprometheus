@@ -61,8 +61,14 @@ class VMG1312T20B(ZyxelBase):
         + r"far-end fast channel bit rate: (?P<upstream>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
 
     line_errors_re = re.compile(
-        r"near-end FEC error interleaved: (?P<downstream_errors>\d+).+"
-        + r"far-end FEC error fast: (?P<upstream_errors>\d+)", flags=re.MULTILINE | re.DOTALL)
+        r"near-end FEC error interleaved: (?P<downstream_fec_errors>\d+).+" +
+        r"near-end CRC error interleaved: (?P<downstream_crc_errors>\d+).+" +
+        r"near-end HEC error interleaved: (?P<downstream_hec_errors>\d+).+" +
+        r"far-end FEC error fast: (?P<upstream_fec_errors>\d+).+" +
+        r"far-end CRC error fast: (?P<upstream_crc_errors>\d+).+" +
+        r"far-end HEC error fast: (?P<upstream_hec_errors>\d+)"
+        , flags=re.MULTILINE | re.DOTALL
+    )
 
     # line_rate_re = re.compile(
     #     r"Bearer:\s+(?P<bearer>\d), Upstream rate = (?P<upstream>\d+) Kbps,\s+"
@@ -142,16 +148,15 @@ class VMG1312T20B(ZyxelBase):
 
             line_errors = self.line_errors_re.search(xdsl)
             if line_errors is not None:
-                upstream_errors = int(line_errors.group("upstream_errors"))
-                downstream_errors = int(line_errors.group("downstream_errors"))
                 output.append(
                     "# HELP zyxel_line_errors The errors on the line.")
                 output.append(
                     "# TYPE zyxel_line_errors counter")
-                output.append(
-                    f"""zyxel_line_errors{{stream="up"}} {upstream_errors}""")
-                output.append(
-                    f"""zyxel_line_errors{{stream="down"}} {downstream_errors}""")
+                for direction in ["upstream", "downstream"]:
+                    for error_type in ["fec", "crc", "hec"]:
+                        error_rate = int(line_errors.group(f"{direction}_{error_type}_errors"))
+                        output.append(
+                            f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
         return output
 
     def parse_ifconfig(self, ifconfig):
