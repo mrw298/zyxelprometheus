@@ -1,10 +1,20 @@
 import logging
 import re
 
+from enum import Enum, IntEnum
 from .zyxel import ZyxelBase
 
 # Set-up logging
 logger = logging.getLogger(__name__)
+
+
+class ZyxelLineStates(str, Enum):
+    INITIALIZING = "initializing"
+    DOWN = "down"
+    UP = "up"
+
+    def __str__(self) -> str:
+        return self.value
 
 
 class VMG1312T20B(ZyxelBase):
@@ -60,12 +70,13 @@ class VMG1312T20B(ZyxelBase):
     # tone 192-223: bb ba ba ba aa aa aa aa aa aa aa aa aa aa aa aa
     # tone 224-255: aa aa aa ab aa aa aa aa aa aa 9a aa 9a aa aa aa
 
+    line_state_re = re.compile(r" Line State:      (?P<line_state>\w+)\r\n", flags=re.MULTILINE | re.DOTALL)
+
     max_line_rate_re = re.compile(
         r"near-end interleaved channel bit rate: (?P<downstream_interleaved>\d+) kbps.+"
         + r"near-end fast channel bit rate: (?P<downstream_fast>\d+) kbps.+"
         + r"far-end interleaved channel bit rate: (?P<upstream_interleaved>\d+) kbps.+"
         + r"far-end fast channel bit rate: (?P<upstream_fast>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
-
 
     line_errors_re = re.compile(
         r"near-end FEC error interleaved: (?P<downstream_fec_errors>\d+).+" +
@@ -92,6 +103,19 @@ class VMG1312T20B(ZyxelBase):
     def parse_xdsl(self, xdsl):
         output = []
         if xdsl is not None:
+            # Get the line state {down,initializing,etc}
+            line_state_match = self.line_state_re.search(xdsl)
+            line_state = line_state_match.group("line_state").lower()
+            output.append(
+                "# HELP zyxel_line_state The current status of the line")
+            output.append(
+                "# TYPE zyxel_line_state gauge")
+
+            for state in ZyxelLineStates:
+                output_state = 1 if state == line_state else 0
+                output.append(
+                    f"""zyxel_line_state{{state="{state}"}} {output_state}""")
+
             max_line_rate = self.max_line_rate_re.search(xdsl)
             if max_line_rate is not None:
                 self.parse_xdsl_max_line_rate(max_line_rate, output)
