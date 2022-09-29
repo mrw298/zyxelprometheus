@@ -16,11 +16,16 @@
 
 # from datetime import datetime
 import http.server
+import logging
 
 from .devices import ZyxelBase
 from .login import login
 from .prometheus import prometheus
+from paramiko.ssh_exception import SSHException
 # from .scrape import scrape_ifconfig, scrape_xdsl
+
+# Set-up logging
+logger = logging.getLogger(__name__)
 
 
 class Scraper:
@@ -39,12 +44,25 @@ class Scraper:
             # self.device = VMG1312T20B(self.session)
             self.device = ZyxelBase.get_device(self.session)
 
-        xdsl = self.device.scrape_xdsl() \
-            if not self.args.ifconfig_only else None
-        ifconfig = self.device.scrape_ifconfig() \
-            if not self.args.xdsl_only else None
+        max_attempts = 3
+        for attempt in range(max_attempts):
+            try:
+                xdsl = self.device.scrape_xdsl() \
+                    if not self.args.ifconfig_only else None
+                ifconfig = self.device.scrape_ifconfig() \
+                    if not self.args.xdsl_only else None
 
-        return xdsl, ifconfig
+                return xdsl, ifconfig
+            except SSHException as e:
+                # Re-initialise the session (deal with "SSH session not active error")
+                logger.warning(f"Retry [{attempt}/{max_attempts}]: SSHException: {e}")
+                self.session = login(self.args.host,
+                                     self.args.user,
+                                     self.args.passwd)
+
+        # Failed to get the answer after 3 retries
+        logger.error(f"Failed to retrieve data after {max_attempts} attempts")
+        return None, None
 
 
 class Handler(http.server.BaseHTTPRequestHandler):

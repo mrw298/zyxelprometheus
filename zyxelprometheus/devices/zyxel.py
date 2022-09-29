@@ -122,6 +122,9 @@ class ZyxelBase:
     def parse_xdsl_max_line_rate(self, max_line_rate, output):
         line_rate_up = int(max_line_rate.group("upstream")) * 1000
         line_rate_down = int(max_line_rate.group("downstream")) * 1000
+        self.output_xdsl_max_line_rate(line_rate_down, line_rate_up, output)
+
+    def output_xdsl_max_line_rate(self, line_rate_down, line_rate_up, output):
         output.append(
             "# HELP zyxel_max_line_rate The maxiumum attainable line rate.")
         output.append(

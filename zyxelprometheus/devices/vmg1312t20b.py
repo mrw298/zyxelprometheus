@@ -1,6 +1,10 @@
+import logging
 import re
 
 from .zyxel import ZyxelBase
+
+# Set-up logging
+logger = logging.getLogger(__name__)
 
 
 class VMG1312T20B(ZyxelBase):
@@ -57,8 +61,11 @@ class VMG1312T20B(ZyxelBase):
     # tone 224-255: aa aa aa ab aa aa aa aa aa aa 9a aa 9a aa aa aa
 
     max_line_rate_re = re.compile(
-        r"near-end interleaved channel bit rate: (?P<downstream>\d+) kbps.+"
-        + r"far-end fast channel bit rate: (?P<upstream>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
+        r"near-end interleaved channel bit rate: (?P<downstream_interleaved>\d+) kbps.+"
+        + r"near-end fast channel bit rate: (?P<downstream_fast>\d+) kbps.+"
+        + r"far-end interleaved channel bit rate: (?P<upstream_interleaved>\d+) kbps.+"
+        + r"far-end fast channel bit rate: (?P<upstream_fast>\d+) kbps", flags=re.MULTILINE | re.DOTALL)
+
 
     line_errors_re = re.compile(
         r"near-end FEC error interleaved: (?P<downstream_fec_errors>\d+).+" +
@@ -101,4 +108,29 @@ class VMG1312T20B(ZyxelBase):
                         output.append(
                             f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
         return output
+
+    def parse_xdsl_max_line_rate(self, max_line_rate, output):
+        line_rate_up_fast = int(max_line_rate.group("upstream_fast")) * 1000
+        line_rate_up_interleaved = int(max_line_rate.group("upstream_interleaved")) * 1000
+        line_rate_down_fast = int(max_line_rate.group("downstream_fast")) * 1000
+        line_rate_down_interleaved = int(max_line_rate.group("downstream_interleaved")) * 1000
+
+        logger.debug(f"down:{line_rate_down_interleaved} / {line_rate_down_fast}")
+        logger.debug(f"up:{line_rate_up_interleaved} / {line_rate_up_fast}")
+
+        # Use the max of fast / interleaved as the line speed.
+        line_rate_up = max(line_rate_up_fast, line_rate_up_interleaved)
+        line_rate_down = max(line_rate_down_fast, line_rate_down_interleaved)
+
+        # Use the base class to format the main downstream / upstream info
+        self.output_xdsl_max_line_rate(line_rate_down, line_rate_up, output)
+
+        output.append(
+            f"""zyxel_max_line_rate{{stream="up_fast"}} {line_rate_up_fast}""")
+        output.append(
+            f"""zyxel_max_line_rate{{stream="up_interleaved"}} {line_rate_up_interleaved}""")
+        output.append(
+            f"""zyxel_max_line_rate{{stream="down_fast"}} {line_rate_down_fast}""")
+        output.append(
+            f"""zyxel_max_line_rate{{stream="down_interleaved"}} {line_rate_down_interleaved}""")
 
