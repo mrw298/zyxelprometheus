@@ -88,6 +88,20 @@ class VMG1312T20B(ZyxelBase):
         , flags=re.MULTILINE | re.DOTALL
     )
 
+    line_noise_re = re.compile(
+        r"Downstream:.+" +
+        r"relative capacity occupation: (?P<downstream_noise_relative_capacity_occupation>\d+)%.+" +
+        r"noise margin downstream: (?P<downstream_noise_margin>\d*\.?\d*) dB.+" +
+        r"output power upstream: (?P<downstream_noise_power>\d*\.?\d*) dbm.+" +
+        r"attenuation downstream: (?P<downstream_noise_attenuation>\d*\.?\d*) dB.+" +
+        r"Upstream:.+" +
+        r"relative capacity occupation: (?P<upstream_noise_relative_capacity_occupation>\d+)%.+" +
+        r"noise margin upstream: (?P<upstream_noise_margin>\d*\.?\d*) dB.+" +
+        r"output power downstream: (?P<upstream_noise_power>\d*\.?\d*) dbm.+" +
+        r"attenuation upstream: (?P<upstream_noise_attenuation>\d*\.?\d*) dB"
+        , flags=re.MULTILINE | re.DOTALL
+    )
+
     def __init__(self, session=None):
         assert session is not None
         self._session = session
@@ -116,10 +130,12 @@ class VMG1312T20B(ZyxelBase):
                 output.append(
                     f"""zyxel_line_state{{state="{state}"}} {output_state}""")
 
+            # Get the max speeds on the line
             max_line_rate = self.max_line_rate_re.search(xdsl)
             if max_line_rate is not None:
                 self.parse_xdsl_max_line_rate(max_line_rate, output)
 
+            # Get the errors on the line
             line_errors = self.line_errors_re.search(xdsl)
             if line_errors is not None:
                 output.append(
@@ -131,6 +147,27 @@ class VMG1312T20B(ZyxelBase):
                         error_rate = int(line_errors.group(f"{direction}stream_{error_type}_errors"))
                         output.append(
                             f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
+
+            # Get the signal on the line
+            line_noise = self.line_noise_re.search(xdsl)
+            if line_noise is not None:
+                for measurement_type in [
+                    dict(label="relative_capacity_occupation", units="percent"),
+                    dict(label="margin", units='db'),
+                    dict(label="power", units='dbm'),
+                    dict(label="attenuation", units='db')
+                ]:
+                    metric_name = f"zyxel_line_noise_{measurement_type['label']}_{measurement_type['units']}"
+                    if 'desc' in measurement_type:
+                        output.append(
+                            f"# HELP {metric_name} {measurement_type['desc']} ")
+                    output.append(
+                        f"# TYPE {metric_name} gauge")
+
+                    for direction in ["down", "up"]:
+                        measurement_value = line_noise.group(f"{direction}stream_noise_{measurement_type['label']}")
+                        output.append(
+                            f"""{metric_name}{{stream="{direction}"}} {measurement_value}""")
         return output
 
     def parse_xdsl_max_line_rate(self, max_line_rate, output):
@@ -157,4 +194,3 @@ class VMG1312T20B(ZyxelBase):
             f"""zyxel_max_line_rate{{stream="down_fast"}} {line_rate_down_fast}""")
         output.append(
             f"""zyxel_max_line_rate{{stream="down_interleaved"}} {line_rate_down_interleaved}""")
-
