@@ -17,6 +17,7 @@
 import http.server
 import logging
 
+from . import InvalidPassword
 from .devices import ZyxelBase
 from .login import login
 from .prometheus import prometheus
@@ -34,31 +35,35 @@ class Scraper:
         self.device = None
 
     def scrape(self):
-        if self.session is None:
-            self.session = login(self.args.host,
-                                 self.args.user,
-                                 self.args.passwd)
-
-            self.device = ZyxelBase.get_device(self.session)
-
         max_attempts = 3
         for attempt in range(max_attempts):
             try:
+                if self.session is None:
+                    self.session = login(self.args.host,
+                                         self.args.user,
+                                         self.args.passwd)
+
+                self.device = ZyxelBase.get_device(self.session)
+
                 xdsl = self.device.scrape_xdsl() \
                     if not self.args.ifconfig_only else None
                 ifconfig = self.device.scrape_ifconfig() \
                     if not self.args.xdsl_only else None
 
+                # Found what we need to, return
                 return xdsl, ifconfig
+
+            # Error handling
+            except InvalidPassword as e:
+                # Rethrow bad password exception
+                raise e
             except SSHException as e:
                 # Re-initialise the session (deal with "SSH session not active error")
                 logger.warning(f"Retry [{attempt}/{max_attempts}]: SSHException: {e} after 100ms")
-                sleep(0.1)  # wait 100ms so we're not in a tight loop
-                # Ignore any exceptions here, will be handled by the higher level retry loop
                 try:
-                    self.session = login(self.args.host,
-                                         self.args.user,
-                                         self.args.passwd)
+                    self.session = None
+                    sleep(0.1)  # wait 100ms so we're not in a tight loop
+                # Ignore any exceptions here, will be handled by the higher level retry loop
                 except Exception as e: # noqa
                     pass
 
