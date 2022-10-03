@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-# from datetime import datetime
 import http.server
 import logging
 
@@ -22,7 +21,7 @@ from .devices import ZyxelBase
 from .login import login
 from .prometheus import prometheus
 from paramiko.ssh_exception import SSHException
-# from .scrape import scrape_ifconfig, scrape_xdsl
+from time import sleep
 
 # Set-up logging
 logger = logging.getLogger(__name__)
@@ -40,8 +39,6 @@ class Scraper:
                                  self.args.user,
                                  self.args.passwd)
 
-            # self.device = VMG1312B10D(self.session)
-            # self.device = VMG1312T20B(self.session)
             self.device = ZyxelBase.get_device(self.session)
 
         max_attempts = 3
@@ -55,10 +52,15 @@ class Scraper:
                 return xdsl, ifconfig
             except SSHException as e:
                 # Re-initialise the session (deal with "SSH session not active error")
-                logger.warning(f"Retry [{attempt}/{max_attempts}]: SSHException: {e}")
-                self.session = login(self.args.host,
-                                     self.args.user,
-                                     self.args.passwd)
+                logger.warning(f"Retry [{attempt}/{max_attempts}]: SSHException: {e} after 100ms")
+                sleep(0.1)  # wait 100ms so we're not in a tight loop
+                # Ignore any exceptions here, will be handled by the higher level retry loop
+                try:
+                    self.session = login(self.args.host,
+                                         self.args.user,
+                                         self.args.passwd)
+                except Exception as e: # noqa
+                    pass
 
         # Failed to get the answer after 3 retries
         logger.error(f"Failed to retrieve data after {max_attempts} attempts")
