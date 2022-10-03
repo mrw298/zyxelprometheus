@@ -119,16 +119,8 @@ class VMG1312T20B(ZyxelBase):
         if xdsl is not None:
             # Get the line state {down,initializing,etc}
             line_state_match = self.line_state_re.search(xdsl)
-            line_state = line_state_match.group("line_state").lower()
-            output.append(
-                "# HELP zyxel_line_state The current status of the line")
-            output.append(
-                "# TYPE zyxel_line_state gauge")
-
-            for state in ZyxelLineStates:
-                output_state = 1 if state == line_state else 0
-                output.append(
-                    f"""zyxel_line_state{{state="{state}"}} {output_state}""")
+            if line_state_match is not None:
+                self.parse_xdsl_line_state(line_state_match, output)
 
             # Get the max speeds on the line
             max_line_rate = self.max_line_rate_re.search(xdsl)
@@ -138,37 +130,55 @@ class VMG1312T20B(ZyxelBase):
             # Get the errors on the line
             line_errors = self.line_errors_re.search(xdsl)
             if line_errors is not None:
-                output.append(
-                    "# HELP zyxel_line_errors The errors on the line.")
-                output.append(
-                    "# TYPE zyxel_line_errors counter")
-                for direction in ["up", "down"]:
-                    for error_type in ["fec", "crc", "hec"]:
-                        error_rate = int(line_errors.group(f"{direction}stream_{error_type}_errors"))
-                        output.append(
-                            f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
+                self.parse_xdsl_line_errors(line_errors, output)
 
             # Get the signal on the line
             line_noise = self.line_noise_re.search(xdsl)
             if line_noise is not None:
-                for measurement_type in [
-                    dict(label="relative_capacity_occupation", units="percent"),
-                    dict(label="margin", units='db'),
-                    dict(label="power", units='dbm'),
-                    dict(label="attenuation", units='db')
-                ]:
-                    metric_name = f"zyxel_line_noise_{measurement_type['label']}_{measurement_type['units']}"
-                    if 'desc' in measurement_type:
-                        output.append(
-                            f"# HELP {metric_name} {measurement_type['desc']} ")
-                    output.append(
-                        f"# TYPE {metric_name} gauge")
+                self.parse_xdsl_line_noise(line_noise, output)
 
-                    for direction in ["down", "up"]:
-                        measurement_value = line_noise.group(f"{direction}stream_noise_{measurement_type['label']}")
-                        output.append(
-                            f"""{metric_name}{{stream="{direction}"}} {measurement_value}""")
         return output
+
+    def parse_xdsl_line_errors(self, line_errors, output):
+        output.append(
+            "# HELP zyxel_line_errors The errors on the line.")
+        output.append(
+            "# TYPE zyxel_line_errors counter")
+        for direction in ["up", "down"]:
+            for error_type in ["fec", "crc", "hec"]:
+                error_rate = int(line_errors.group(f"{direction}stream_{error_type}_errors"))
+                output.append(
+                    f"""zyxel_line_errors{{stream="{direction}", type="{error_type}"}} {error_rate}""")
+
+    def parse_xdsl_line_state(self, line_state_match, output):
+        line_state = line_state_match.group("line_state").lower()
+        output.append(
+            "# HELP zyxel_line_state The current status of the line")
+        output.append(
+            "# TYPE zyxel_line_state gauge")
+        for state in ZyxelLineStates:
+            output_state = 1 if state == line_state else 0
+            output.append(
+                f"""zyxel_line_state{{state="{state}"}} {output_state}""")
+
+    def parse_xdsl_line_noise(self, line_noise, output):
+        for measurement_type in [
+            dict(label="relative_capacity_occupation", units="percent"),
+            dict(label="margin", units='db'),
+            dict(label="power", units='dbm'),
+            dict(label="attenuation", units='db')
+        ]:
+            metric_name = f"zyxel_line_noise_{measurement_type['label']}_{measurement_type['units']}"
+            if 'desc' in measurement_type:
+                output.append(
+                    f"# HELP {metric_name} {measurement_type['desc']} ")
+            output.append(
+                f"# TYPE {metric_name} gauge")
+
+            for direction in ["down", "up"]:
+                measurement_value = line_noise.group(f"{direction}stream_noise_{measurement_type['label']}")
+                output.append(
+                    f"""{metric_name}{{stream="{direction}"}} {measurement_value}""")
 
     def parse_xdsl_max_line_rate(self, max_line_rate, output):
         line_rate_up_fast = int(max_line_rate.group("upstream_fast")) * 1000
